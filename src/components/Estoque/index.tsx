@@ -1,4 +1,4 @@
-import { StyleSheet, FlatList, TextInput, Text } from 'react-native';
+import { StyleSheet, FlatList, TextInput, Text, View } from 'react-native';
 import { prismaClient } from '../../services/db';
 import { TaskList } from './list';
 import { useEffect, useState } from 'react';
@@ -36,7 +36,7 @@ export function Estoque({ filter }: { filter: boolean }) {
     );
 
  return (
-   <>
+   <View style={styles.container}>
     <TextInput
         placeholder="Pesquisar produto..."
         value={searchQuery}
@@ -49,11 +49,15 @@ export function Estoque({ filter }: { filter: boolean }) {
       renderItem={ ({ item }) => <TaskList data={item} /> }
       
     />
-   </>
+   </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+   flex: 1,
+   
+  },
 searchInput: {
     height: 40,
     backgroundColor: 'white',

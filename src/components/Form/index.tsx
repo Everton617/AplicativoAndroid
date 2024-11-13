@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, Modal, TextInput, Keyboard } from 'r
 import { Ionicons, AntDesign } from '@expo/vector-icons'
 import { prismaClient } from "../../services/db"
 import { Image } from 'react-native';
+import { ToastAndroid } from 'react-native'
 
 export function FormTask() {
   const [produto, setProduto] = useState("")
@@ -10,34 +11,71 @@ export function FormTask() {
   const [preco, setPreco] = useState(0)
   const [modalVisible, setModalVisible] = useState(false);
 
-  async function handleNewTask() {
-    if (produto === "" || quantidade === 0 || preco === 0 || preco === undefined || isNaN(preco)) return;
-
-    console.log('Adicionando')
-
-    await prismaClient.estoque.create({
-      data: {
-        nome: produto,
-        disponivel: true,
-        quantidade: quantidade,
-        preco: preco,
-
+  async function handleNovoProduto() {
+    if (produto === "" || quantidade <= 0 || preco <= 0 || preco === undefined || isNaN(preco)) {
+      let mensagem = 'Preencha todos os campos corretamente.';
+      if (quantidade <= 0) {
+        mensagem = 'A quantidade deve ser maior que 0.';
+      } else if (preco <= 0 || isNaN(preco)) {
+        mensagem = 'O preço deve ser maior que 0.';
       }
-    })
+      ToastAndroid.showWithGravity(
+        mensagem,
+        ToastAndroid.SHORT,
+        ToastAndroid.TOP
+      );
+      return;
+    }
+  
+    try {
+      // Verifica se já existe um produto com o mesmo nome
+      const produtoExistente = await prismaClient.estoque.findFirst({
+        where: {
+          nome: produto,
+        },
+      });
+  
+      if (produtoExistente) {
+        // Mostra um Toast informando que o produto já existe
+        ToastAndroid.showWithGravity(
+          'Já existe um produto com este nome.',
+          ToastAndroid.SHORT,
+          ToastAndroid.TOP
+        );
+        return; // Impede a criação do produto duplicado
+      }
 
-    setModalVisible(false)
-
-    setProduto("")
-    setQuantidade(0)
-    setPreco(0)
-    Keyboard.dismiss()
-
+      console.log('Adicionando');
+      await prismaClient.estoque.create({
+        data: {
+          nome: produto,
+          disponivel: true,
+          quantidade: quantidade,
+          preco: preco,
+        },
+      });
+  
+      setModalVisible(false);
+      setProduto("");
+      setQuantidade(0);
+      setPreco(0);
+      Keyboard.dismiss();
+  
+    } catch (error) {
+      console.error("Erro ao adicionar produto:", error);
+      // Lide com o erro de alguma forma, talvez mostrando um Toast de erro genérico
+      ToastAndroid.showWithGravity(
+        'Erro ao adicionar produto. Tente novamente.',
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER
+      );
+    }
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.container} >
-      <Image style ={styles.logo} source={require('../../../assets/logotipo.png')} />
+        <Image style={styles.logo} source={require('../../../assets/logotipo.png')} />
 
         <Pressable style={styles.buttonAdd} onPress={() => setModalVisible(true)}>
           <Text style={styles.buttonText}>Adicionar Produto</Text>
@@ -54,6 +92,7 @@ export function FormTask() {
           setModalVisible(!modalVisible); // Garante que o modal fecha ao tocar fora (Android)
         }}
       >
+
 
         <View style={styles.centeredView}>
 
@@ -83,7 +122,7 @@ export function FormTask() {
               style={styles.input}
             />
             <View style={styles.modalButtonContainer}>
-              <Pressable style={[styles.button, styles.buttonSave]} onPress={handleNewTask}>
+              <Pressable style={[styles.button, styles.buttonSave]} onPress={handleNovoProduto}>
                 <Text style={styles.buttonText}>Salvar</Text>
               </Pressable>
               <Pressable style={[styles.button, styles.buttonCancel]} onPress={() => setModalVisible(false)}>
@@ -104,6 +143,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    
   },
   header: {
     display: 'flex',
@@ -115,7 +155,7 @@ const styles = StyleSheet.create({
     color: '#333',
     paddingBottom: 20
   },
-  logo:{
+  logo: {
     width: 250,
     height: 200,
   },
@@ -142,17 +182,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#582766', 
+    backgroundColor: '#582766',
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
-    width:170
+    width: 170
   },
   centeredView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)', 
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalView: {
     margin: 20,

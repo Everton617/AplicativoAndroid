@@ -120,90 +120,94 @@ export function TaskList({ data }: Props) {
 
   return (
     
-    <View>
-     
-      <View style={styles.container}>
-        <View style={styles.infoarea}>
-          <Text>Nome</Text>
-          <Text>Quantidade</Text>
-          <Text>Preço</Text></View>
-        {filteredData && ( 
-          <View style={styles.info}>
-            <Text style={styles.text}>{filteredData.nome}</Text>
-            <Text style={styles.text}>{filteredData.quantidade}</Text>
-            <Text style={styles.text}>R${filteredData.preco}</Text>
-          </View>
-        )}
-        {!filteredData && <Text>Nenhum produto encontrado.</Text>}
-        <View style={styles.buttons}>
-          <Pressable style={styles.buttonDelete} onPress={handleDeleteTask}>
-            <Ionicons name="trash-outline" size={16} color="#FFF" />
-          </Pressable>
-          <Pressable style={styles.buttonUpdate} onPress={() => setModalVisible(true)}>
-            <MaterialIcons name="update" size={16} color="#FFF" />
-          </Pressable>
-          {data.disponivel && (
-            <Pressable style={styles.buttonEsgotado} onPress={handleUpdateStatus}>
-              <MaterialCommunityIcons name="close-circle-outline" size={16} color="black" />
-            </Pressable>
+   
+     <View >
+       
+        <View style={styles.container}>
+          <View style={styles.infoarea}>
+            <Text>Nome</Text>
+            <Text>Quantidade</Text>
+            <Text>Preço</Text></View>
+          {filteredData && (
+            <View style={styles.info}>
+              <Text style={styles.text}>{filteredData.nome}</Text>
+              <Text style={styles.text}>{filteredData.quantidade}</Text>
+              <Text style={styles.text}>R${filteredData.preco}</Text>
+            </View>
           )}
-        </View>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(!modalVisible); 
-          }}
-        >
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <View style={styles.header} >
-                <Text style={styles.title}>Atualizar Produto:</Text>
-              </View>
-              <TextInput
-                defaultValue={data.nome}
-                placeholder="Digite um novo nome..."
-                value={produto}
-                onChangeText={setProduto}
-                style={styles.input}
-              />
-              <TextInput
-                keyboardType="numeric"
-                placeholder="Digite a quantidade..."
-                value={quantidade.toString()}
-                onChangeText={text => setQuantidade(Number(text))}
-                style={styles.input}
-              />
-              <TextInput
-                keyboardType="numeric"
-                placeholder="Digite o preço..."
-                value={preco.toString()}
-                onChangeText={text => setPreco(Number(text))}
-                style={styles.input}
-              />
-              <View style={styles.modalButtonContainer}>
-                <Pressable style={[styles.button, styles.buttonSave]} onPress={() => handleUpdateProduto(data.id)}>
-                  <Text style={styles.buttonText}>Salvar</Text>
-                </Pressable>
-                <Pressable style={[styles.button, styles.buttonCancel]} onPress={() => setModalVisible(false)}>
-                  <Text style={styles.buttonText}>Cancelar</Text>
-                </Pressable>
+          {!filteredData && <Text>Nenhum produto encontrado.</Text>}
+          <View style={styles.buttons}>
+            <Pressable style={styles.buttonDelete} onPress={handleDeleteTask}>
+              <Ionicons name="trash-outline" size={16} color="#FFF" />
+            </Pressable>
+            <Pressable style={styles.buttonUpdate} onPress={() => setModalVisible(true)}>
+              <MaterialIcons name="update" size={16} color="#FFF" />
+            </Pressable>
+            {data.disponivel && (
+              <Pressable style={styles.buttonEsgotado} onPress={handleUpdateStatus}>
+                <MaterialCommunityIcons name="close-circle-outline" size={16} color="black" />
+              </Pressable>
+            )}
+          </View>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              setModalVisible(!modalVisible);
+            }}
+          >
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <View style={styles.header} >
+                  <Text style={styles.title}>Atualizar Produto:</Text>
+                </View>
+                <TextInput
+                  defaultValue={data.nome}
+                  placeholder="Digite um novo nome..."
+                  value={produto}
+                  onChangeText={setProduto}
+                  style={styles.input}
+                />
+                <TextInput
+                  keyboardType="numeric"
+                  placeholder="Digite a quantidade..."
+                  value={quantidade.toString()}
+                  onChangeText={text => setQuantidade(Number(text))}
+                  style={styles.input}
+                />
+                <TextInput
+                  keyboardType="numeric"
+                  placeholder="Digite o preço..."
+                  value={preco.toString()}
+                  onChangeText={text => setPreco(Number(text))}
+                  style={styles.input}
+                />
+                <View style={styles.modalButtonContainer}>
+                  <Pressable style={[styles.button, styles.buttonSave]} onPress={() => handleUpdateProduto(data.id)}>
+                    <Text style={styles.buttonText}>Salvar</Text>
+                  </Pressable>
+                  <Pressable style={[styles.button, styles.buttonCancel]} onPress={() => setModalVisible(false)}>
+                    <Text style={styles.buttonText}>Cancelar</Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
-          </View>
-        </Modal>
-      </View>
-    </View>
+          </Modal>
+        </View>
+     </View>
+   
   );
 }
 
 const styles = StyleSheet.create({
+  
   container: {
     backgroundColor: "#64748b",
     marginBottom: 30,
     padding: 14,
     borderRadius: 4,
+  
   },
   infoarea: {
     flexDirection: "row",
