@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal, TextInput, Keyboard } from 'react-native';
 import { Ionicons, AntDesign } from '@expo/vector-icons'
 import { prismaClient } from "../../services/db"
+import { Image } from 'react-native';
 
 export function FormTask() {
   const [produto, setProduto] = useState("")
@@ -20,7 +21,7 @@ export function FormTask() {
         disponivel: true,
         quantidade: quantidade,
         preco: preco,
-        
+
       }
     })
 
@@ -35,10 +36,15 @@ export function FormTask() {
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.button} onPress={() => setModalVisible(true)}>
-        <Text style={styles.buttonText}>Adicionar Produto</Text>
-        <Ionicons name="add" size={24} color="#FFF" />
-      </Pressable>
+      <View style={styles.container} >
+      <Image style ={styles.logo} source={require('../../../assets/logotipo.png')} />
+
+        <Pressable style={styles.buttonAdd} onPress={() => setModalVisible(true)}>
+          <Text style={styles.buttonText}>Adicionar Produto</Text>
+          <Ionicons name="add" size={24} color="#FFF" />
+        </Pressable>
+
+      </View>
 
       <Modal
         animationType="slide" // ou 'fade' ou 'none'
@@ -109,6 +115,10 @@ const styles = StyleSheet.create({
     color: '#333',
     paddingBottom: 20
   },
+  logo:{
+    width: 250,
+    height: 200,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -128,11 +138,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginRight: 5,
   },
+  buttonAdd: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#582766', 
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    width:170
+  },
   centeredView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)', // Fundo semi-transparente
+    backgroundColor: 'rgba(0,0,0,0.5)', 
   },
   modalView: {
     margin: 20,
