@@ -2,12 +2,13 @@ import { StyleSheet, FlatList, TextInput, Text, View } from 'react-native';
 import { prismaClient } from '../../services/db';
 import { TaskList } from './list';
 import { useEffect, useState } from 'react';
+import { Prisma } from '@prisma/client';
 interface data {
   
     id: number;
     nome: string;
     quantidade: number;
-    preco: number;
+    preco: Prisma.Decimal;
     disponivel: boolean;
 
 }

@@ -12,6 +12,6 @@ model Estoque{
   id          Int @id @default(autoincrement())
   nome        String @unique
   disponivel  Boolean @default(false)
-  quantidade      Int
-  preco   Float   
+  quantidade  Int
+  preco       Decimal   
 }

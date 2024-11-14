@@ -1,69 +1,92 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal, TextInput, Keyboard } from 'react-native';
 import { Ionicons, AntDesign } from '@expo/vector-icons'
 import { prismaClient } from "../../services/db"
 import { Image } from 'react-native';
 import { ToastAndroid } from 'react-native'
+import { Prisma } from '@prisma/client';
+
+interface data {
+  
+  id: number;
+  nome: string;
+  quantidade: number;
+  preco: Prisma.Decimal;
+  disponivel: boolean;
+
+}
 
 export function FormTask() {
   const [produto, setProduto] = useState("")
   const [quantidade, setQuantidade] = useState(0)
-  const [preco, setPreco] = useState(0)
+  const [preco, setPreco] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [produtos, setProdutos] = useState<data[]>([]);
+
+  useEffect(() => {
+   
+    fetchProdutos();
+  }, []);
+
+  async function fetchProdutos() {
+    try {
+      const produtosData = await prismaClient.estoque.findMany();
+      setProdutos(produtosData);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      ToastAndroid.showWithGravity(
+        'Erro ao buscar produtos. Tente novamente.',
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER
+      );
+    }
+  }
 
   async function handleNovoProduto() {
-    if (produto === "" || quantidade <= 0 || preco <= 0 || preco === undefined || isNaN(preco)) {
+    const parsedPreco = parseFloat(preco.replace(',', '.')); 
+
+    if (produto === "" || quantidade <= 0 || isNaN(parsedPreco) || parsedPreco <= 0) {
       let mensagem = 'Preencha todos os campos corretamente.';
       if (quantidade <= 0) {
         mensagem = 'A quantidade deve ser maior que 0.';
-      } else if (preco <= 0 || isNaN(preco)) {
-        mensagem = 'O preço deve ser maior que 0.';
+      } else if (isNaN(parsedPreco) || parsedPreco <= 0) {
+        mensagem = 'O preço deve ser um número maior que 0.';
       }
-      ToastAndroid.showWithGravity(
-        mensagem,
-        ToastAndroid.SHORT,
-        ToastAndroid.TOP
-      );
+      ToastAndroid.showWithGravity(mensagem, ToastAndroid.SHORT, ToastAndroid.TOP);
       return;
     }
-  
+
     try {
-      // Verifica se já existe um produto com o mesmo nome
       const produtoExistente = await prismaClient.estoque.findFirst({
-        where: {
-          nome: produto,
-        },
+        where: { nome: produto }
       });
-  
+
       if (produtoExistente) {
-        // Mostra um Toast informando que o produto já existe
         ToastAndroid.showWithGravity(
           'Já existe um produto com este nome.',
           ToastAndroid.SHORT,
           ToastAndroid.TOP
         );
-        return; // Impede a criação do produto duplicado
+        return;
       }
 
-      console.log('Adicionando');
+
       await prismaClient.estoque.create({
         data: {
           nome: produto,
           disponivel: true,
           quantidade: quantidade,
-          preco: preco,
+          preco: parsedPreco, 
         },
       });
-  
-      setModalVisible(false);
-      setProduto("");
-      setQuantidade(0);
-      setPreco(0);
-      Keyboard.dismiss();
-  
+
+      fetchProdutos();
+      setModalVisible(false)
+      setProduto('')
+      setQuantidade(0)
+      setPreco(''); 
     } catch (error) {
       console.error("Erro ao adicionar produto:", error);
-      // Lide com o erro de alguma forma, talvez mostrando um Toast de erro genérico
       ToastAndroid.showWithGravity(
         'Erro ao adicionar produto. Tente novamente.',
         ToastAndroid.SHORT,
@@ -85,11 +108,11 @@ export function FormTask() {
       </View>
 
       <Modal
-        animationType="slide" // ou 'fade' ou 'none'
+        animationType="slide" 
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
-          setModalVisible(!modalVisible); // Garante que o modal fecha ao tocar fora (Android)
+          setModalVisible(!modalVisible); 
         }}
       >
 
@@ -101,26 +124,39 @@ export function FormTask() {
               <Text style={styles.title}>Adicionar novo Produto</Text>
               <AntDesign style={{ marginTop: 5 }} name="shoppingcart" size={24} color="black" />
             </View>
-            <TextInput
-              placeholder="Digite um produto..."
-              value={produto}
-              onChangeText={setProduto}
-              style={styles.input}
-            />
-            <TextInput
-              keyboardType="numeric"
-              placeholder="Digite a quantidade..."
-              value={quantidade.toString()}
-              onChangeText={text => setQuantidade(Number(text))}
-              style={styles.input}
-            />
-            <TextInput
-              keyboardType="numeric"
-              placeholder="Digite o preço..."
-              value={preco.toString()}
-              onChangeText={text => setPreco(Number(text))}
-              style={styles.input}
-            />
+
+            <View style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }} >
+              <Text style={{ fontSize: 16, paddingBottom: 10, paddingRight: 5 }}>Insira um nome:</Text>
+              <TextInput
+                placeholder="Digite um produto..."
+                value={produto}
+                onChangeText={setProduto}
+                style={styles.input}
+              />
+            </View>
+
+            <View style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
+              <Text style={{ fontSize: 16, paddingBottom: 10, paddingRight: 5 }}>Insira a quantidade:</Text>
+              <TextInput
+                keyboardType="numeric"
+                placeholder="Digite a quantidade..."
+                value={quantidade.toString()}
+                onChangeText={text => setQuantidade(Number(text))}
+                style={styles.input}
+              />
+            </View>
+
+            <View style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
+              <Text style={{ fontSize: 16, paddingBottom: 10, paddingRight: 5 }}>Insira um preço:</Text>
+              <TextInput
+                placeholder="Digite o preço..."
+                value={preco}
+                onChangeText={setPreco} 
+                keyboardType="decimal-pad" 
+                style={styles.input}
+              />
+            </View>
+
             <View style={styles.modalButtonContainer}>
               <Pressable style={[styles.button, styles.buttonSave]} onPress={handleNovoProduto}>
                 <Text style={styles.buttonText}>Salvar</Text>
@@ -143,7 +179,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    
+
   },
   header: {
     display: 'flex',
@@ -160,6 +196,7 @@ const styles = StyleSheet.create({
     height: 200,
   },
   input: {
+    width: 140,
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
@@ -207,9 +244,9 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5, // Sombra para Android
+    elevation: 5, 
   },
-  modalButtonContainer: { // Estilos para o container dos botões
+  modalButtonContainer: { 
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',

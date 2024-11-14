@@ -5,13 +5,14 @@ import { Ionicons } from '@expo/vector-icons'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useEffect, useState } from 'react';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Decimal } from '@prisma/client/runtime/react-native';
 
 interface Props {
   data: {
     id: number;
     nome: string;
     quantidade: number;
-    preco: number;
+    preco: Decimal;
     disponivel: boolean;
   };
 }
@@ -20,7 +21,7 @@ interface Props {
 export function TaskList({ data }: Props) {
   const [produto, setProduto] = useState("")
   const [quantidade, setQuantidade] = useState(0)
-  const [preco, setPreco] = useState(0)
+  const [preco, setPreco] = useState< string>('');
   const [modalVisible, setModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState(data);
@@ -47,7 +48,9 @@ export function TaskList({ data }: Props) {
   }
 
   async function handleUpdateProduto(id: number) {
-    if (produto === "" || preco === 0 || isNaN(preco)) return;
+    const parsedPreco = typeof preco === 'string' ? parseFloat(preco) : preco;
+
+    if (produto === "" || quantidade === 0 || isNaN(parsedPreco)) return;
 
     console.log('Atualizando')
 
@@ -56,7 +59,7 @@ export function TaskList({ data }: Props) {
       data: {
         nome: produto,
         quantidade: quantidade,
-        preco: preco,
+        preco: parsedPreco,
 
       }
     })
@@ -78,27 +81,27 @@ export function TaskList({ data }: Props) {
 
     setProduto("")
     setQuantidade(0)
-    setPreco(0)
+    setPreco('')
     Keyboard.dismiss()
 
   }
 
   useEffect(() => {
-    // Este useEffect é executado sempre que modalVisible muda
+    
     if (modalVisible) {
       setProduto(data.nome);
       setQuantidade(data.quantidade);
-      setPreco(data.preco);
+      setPreco(data.preco.toString());
     }
   }, [modalVisible]);
 
   useEffect(() => {
-    // Filtra os dados com base na string de pesquisa
+    
     if (searchQuery === "") {
-      setFilteredData(data); // Se a pesquisa estiver vazia, mostra todos os dados
+      setFilteredData(data); 
     } else {
       const filtered = Object.values({ data }).filter((item: any) =>
-        item.nome.toLowerCase().includes(searchQuery.toLowerCase()) // Filtra pelo nome do produto
+        item.nome.toLowerCase().includes(searchQuery.toLowerCase()) 
       );
       setFilteredData(filtered[0]);
 
@@ -107,16 +110,7 @@ export function TaskList({ data }: Props) {
 
   }, [searchQuery, data]);
 
-  const searchInput = () => {
-    return(
-      <TextInput
-        placeholder="Pesquisar produto..."
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        
-      />
-    )
-  }
+
 
   return (
     
@@ -132,7 +126,7 @@ export function TaskList({ data }: Props) {
             <View style={styles.info}>
               <Text style={styles.text}>{filteredData.nome}</Text>
               <Text style={styles.text}>{filteredData.quantidade}</Text>
-              <Text style={styles.text}>R${filteredData.preco}</Text>
+              <Text style={styles.text}>R$ {filteredData.preco.toString()}</Text>
             </View>
           )}
           {!filteredData && <Text>Nenhum produto encontrado.</Text>}
@@ -162,27 +156,35 @@ export function TaskList({ data }: Props) {
                 <View style={styles.header} >
                   <Text style={styles.title}>Atualizar Produto:</Text>
                 </View>
-                <TextInput
-                  defaultValue={data.nome}
-                  placeholder="Digite um novo nome..."
-                  value={produto}
-                  onChangeText={setProduto}
-                  style={styles.input}
-                />
-                <TextInput
-                  keyboardType="numeric"
-                  placeholder="Digite a quantidade..."
-                  value={quantidade.toString()}
-                  onChangeText={text => setQuantidade(Number(text))}
-                  style={styles.input}
-                />
-                <TextInput
-                  keyboardType="numeric"
-                  placeholder="Digite o preço..."
-                  value={preco.toString()}
-                  onChangeText={text => setPreco(Number(text))}
-                  style={styles.input}
-                />
+                <View style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }} >
+              <Text style={{ fontSize: 16, paddingBottom: 10, paddingRight: 5 }}>Insira um nome:</Text>
+              <TextInput
+                placeholder="Digite um produto..."
+                value={produto}
+                onChangeText={setProduto}
+                style={styles.input}
+              />
+            </View>
+            <View style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
+              <Text style={{ fontSize: 16, paddingBottom: 10, paddingRight: 5 }}>Insira a quantidade:</Text>
+              <TextInput
+                keyboardType="numeric"
+                placeholder="Digite a quantidade..."
+                value={quantidade.toString()}
+                onChangeText={text => setQuantidade(Number(text))}
+                style={styles.input}
+              />
+            </View>
+            <View style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
+              <Text style={{ fontSize: 16, paddingBottom: 10, paddingRight: 5 }}>Insira um preço:</Text>
+              <TextInput
+                placeholder="Digite o preço..."
+                value={preco}
+                onChangeText={setPreco} 
+                keyboardType="decimal-pad" 
+                style={styles.input}
+              />
+            </View>
                 <View style={styles.modalButtonContainer}>
                   <Pressable style={[styles.button, styles.buttonSave]} onPress={() => handleUpdateProduto(data.id)}>
                     <Text style={styles.buttonText}>Salvar</Text>
